@@ -203,7 +203,8 @@ function generateMethodBodyFromMethodAndParametersAndClass($method, $parameters,
 
 function generatePhpParamVarFromParam($param)
 {
-    return $param['name'] . getHungarianFromXsType($param['type']);
+    //return $param['name'] . getHungarianFromXsType($param['type']);
+    return $param['name'];  //. getHungarianFromXsType($param['type']);    
 }
 
 function getIsInitializeFromMethodName($method)
@@ -229,7 +230,7 @@ function generateMethodsFromPortTypesSingleUrl($url, $class)
 
         foreach($parameters[$method] as $param)
         {
-            $all[] = '$' . generatePhpParamVarFromParam($param) .
+            $all[] = getTypeHintFromParam($param) . ' $' . generatePhpParamVarFromParam($param) .
             '=null';
         }
         $string .= implode(', ', $all);
@@ -243,6 +244,37 @@ function generateMethodsFromPortTypesSingleUrl($url, $class)
     return $generated_methods;
 }
 
+function accessParameterType($type=false)
+{    
+    static $types = [];
+    if(!$type)
+    {
+        return $types;
+    }
+    $types[] = $type;
+}
+
+function getTypeHintFromParam($param)
+{
+    $type = $param['type'];
+    if(in_array($type, 
+        ['xs:string','xs:boolean','xs:base64Binary','xs:long','xs:int']))
+    {
+        return '';
+    }
+    
+    $parts      = explode(':', $type);
+    $type       = array_pop($parts);
+    $namespace  = array_pop($parts);
+    if($namespace == 'xs')
+    {
+        throw new Exception("Unknown Type: [$type]");
+    }
+    $parameters = 'Parameters\\' . $type;
+    accessParameterType($parameters);
+    return $parameters;
+}
+
 //looks (and, probably is) janky, but we used this during
 //development to identify all the different object types
 function getHungarianFromXsType($type)
@@ -253,12 +285,16 @@ function getHungarianFromXsType($type)
             return 'String';
         case 'xs:long':
             return 'String';            
+        case 'xs:boolean':
+            return 'Boolean';
+        case 'xs:base64Binary':
+            return 'Base64Binary';   
+        case 'xs:int':
+            return 'Int';            
         case 'ns0:VersionVO':
             return 'ObjectVersionV0';
         case 'ns2:AnnouncementVO':
             return 'ObjectAnnouncementVO';
-        case 'xs:boolean':
-            return 'Boolean';
         case 'ns2:AnnouncementAttributeFilter':
             return 'ObjectAnnouncementAttributeFilter';
         case 'ns2:CalendarItemVO':
@@ -279,8 +315,6 @@ function getHungarianFromXsType($type)
             return 'ObjectLinkVO';            
         case 'ns1:ContentFileMetadataVO':
             return 'ObjectContentFileMetadataVO';
-        case 'xs:base64Binary':
-            return 'Base64Binary';            
         case 'ns1:ContentFilter':
             return 'ObjectContentFilter';
         case 'ns1:CategoryFilter':
@@ -295,8 +329,6 @@ function getHungarianFromXsType($type)
             return 'ObjectGroupVO';
         case 'ns1:GroupFilter':
             return 'ObjectGroupFilter';
-        case 'xs:int':
-            return 'Int';
         case 'ns1:TermVO':
             return 'ObjectTermVO';
         case 'ns2:UserVO':
@@ -370,12 +402,30 @@ function getBaseDir()
     //'/Users/alanstorm/Documents/github_public/blackboard-soap-client';
 }
 
+function getFullPathFromClassname($class)
+{
+    $base_dir = getBaseDir();
+    $path_full = $base_dir . '/' . 
+                    str_replace('\\','/',$class) . '.php';    
+    return $path_full;                    
+}
+
+function makeDirectoryForFileIfDoesntExist($path_full)
+{
+    $dir_name = dirname($path_full);
+    if(!is_dir($dir_name))
+    {
+        mkdir($dir_name, 0755, true);
+    }
+}
+
 function generateClientClasses($urls, $methods)
 {
     $base_dir = getBaseDir();
     foreach(array_keys($urls) as $class)
     {
-        $path_full = $base_dir . '/' . str_replace('\\','/',$class) . '.php';
+        //$path_full = $base_dir . '/' . str_replace('\\','/',$class) . '.php';
+        $path_full = getFullPathFromClassname($class);
         $dir_name = dirname($path_full);
         if(!is_dir($dir_name))
         {
@@ -391,6 +441,35 @@ function generateClientClasses($urls, $methods)
     }
 }
 
+function getPhpNamespaceFromFullPath($full_path)
+{
+    $base_dir = getBaseDir();
+    return str_replace('/','\\',trim(str_replace($base_dir, '', dirname($full_path)),'/'));
+}
+
+function getPhpClassNameFromFullPath($full_path)
+{
+    return str_replace('.php','',basename($full_path));
+}
+
+function generateParamaterClasses($parameters)
+{
+    foreach($parameters as $class)
+    {
+        $class = 'Pulsestorm\Blackboard\Soap\\' . $class;
+        $full_path = getFullPathFromClassname($class);
+        makeDirectoryForFileIfDoesntExist($full_path);
+        $namespace = getPhpNamespaceFromFullPath($full_path);
+        $class_name = getPhpClassNameFromFullPath($full_path);
+        
+        file_put_contents($full_path, '<' . '?' . 'php' . "\n" .
+            'namespace ' . $namespace . "\n" . 
+            'class ' . $class_name . "\n" . 
+            '{' . "\n" . 
+            '}');                    
+    }
+}
+
 function main($argv)
 {
     $urls = getUrls();
@@ -398,5 +477,7 @@ function main($argv)
     
     $methods = generateMethodsFromPortTypes($urls);
     generateClientClasses($urls, $methods);
+    generateParamaterClasses(accessParameterType());    
+    
 }
 main($argv);
