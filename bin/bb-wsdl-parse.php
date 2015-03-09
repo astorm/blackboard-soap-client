@@ -91,8 +91,14 @@ function output($string)
 
 function loadWsdlAsXmlFromUrl($url)
 {
-    $contents = file_get_contents($url);        
-    $xml = simplexml_load_string($contents);
+    static $cache = [];
+    if(isset($cache[$url]))
+    {
+        return $cache[$url];
+    }
+    $contents    = file_get_contents($url);        
+    $xml         = simplexml_load_string($contents);
+    $cache[$url] = $xml;
     return $xml;
 }
 
@@ -109,6 +115,12 @@ function getMethodsAndRequestMessagesFromWsdlPortTypes($xml)
         $results[(string)$attributes['name']] = (string)$attributes_input['message'];
     }
     return $results;
+}
+
+function getNamespacePortionFromTag($tag)
+{
+    $parts = explode(':', $tag);
+    return array_shift($parts);
 }
 
 function getNamePortionFromTag($tag)
@@ -136,6 +148,7 @@ function getMessageElementFromXml($message_name, $xml)
 
 function getParametersFromMethodsArrayAndXml($methods, $xml)
 {
+    $doc_namespaces = $xml->getDocNamespaces();
     $parameters = [];
     foreach($methods as $method=>$message_request_type)
     {
@@ -145,7 +158,8 @@ function getParametersFromMethodsArrayAndXml($methods, $xml)
         {            
             continue;
         }
-        $element_name = getNamePortionFromTag((string) $element);
+        $element_namespace  = getNamespacePortionFromTag((string) $element);
+        $element_name       = getNamePortionFromTag((string) $element);
         
         //use results above to lookup //xs:element[@name=""]
         $xpath = '//xs:element[@name="'.$element_name.'"]';
@@ -165,12 +179,23 @@ function getParametersFromMethodsArrayAndXml($methods, $xml)
         
         foreach($sequence->children('http://www.w3.org/2001/XMLSchema') as $element)
         {
+            $element_namespace = getNamespacePortionFromTag(
+                (string) $element->attributes()['type']);
+            
             $attributes = $element->attributes();
             $parameter  = [
-                'name'=>(string)$attributes['name'],
-                'type'=>(string)$attributes['type']
-            ];            
+                'name'           => (string)$attributes['name'],
+                'type'           => (string)$attributes['type'],
+                'complex-config' => false,
+                'namespace'      => $doc_namespaces[$element_namespace]
+            ];
+            if(strpos($parameter['type'], 'xs') !== 0)
+            {
+                $parameter['complex-config'] = getComplexParameterTypeDefintionFromXml($parameter['type'], $xml);                           
+            }
+
             $parameters[$method][] = $parameter;
+            
         }
     }
     return $parameters;
@@ -230,7 +255,7 @@ function generateMethodsFromPortTypesSingleUrl($url, $class)
 
         foreach($parameters[$method] as $param)
         {
-            $all[] = getTypeHintFromParam($param) . ' $' . generatePhpParamVarFromParam($param) .
+            $all[] = getTypeHintFromParamAndUrl($param, $url) . ' $' . generatePhpParamVarFromParam($param) .
             '=null';
         }
         $string .= implode(', ', $all);
@@ -241,7 +266,21 @@ function generateMethodsFromPortTypesSingleUrl($url, $class)
         
         $generated_methods[] = $string;
     } 
+    $to_save        = accessParameterConfigurations();
+    $to_save        = $to_save ? $to_save : [];
+    $to_save[$url]  = $parameters;
+    accessParameterConfigurations($to_save);
     return $generated_methods;
+}
+
+function accessParameterConfigurations($value=false)
+{
+    static $configs;
+    if(!$value)
+    {
+        return $configs;
+    }
+    $configs = $value;
 }
 
 function accessParameterType($type=false)
@@ -254,8 +293,9 @@ function accessParameterType($type=false)
     $types[] = $type;
 }
 
-function getTypeHintFromParam($param)
+function getTypeHintFromParamAndUrl($param, $url)
 {
+    $wsdl_namespsace = getPhpNamespaceFromWsdlUrl($url);
     $type = $param['type'];
     if(in_array($type, 
         ['xs:string','xs:boolean','xs:base64Binary','xs:long','xs:int']))
@@ -270,7 +310,7 @@ function getTypeHintFromParam($param)
     {
         throw new Exception("Unknown Type: [$type]");
     }
-    $parameters = 'Parameters\\' . $type;
+    $parameters = 'Parameters\\' . $wsdl_namespsace . '\\' . $type;
     accessParameterType($parameters);
     return $parameters;
 }
@@ -452,22 +492,108 @@ function getPhpClassNameFromFullPath($full_path)
     return str_replace('.php','',basename($full_path));
 }
 
-function generateParamaterClasses($parameters)
+function getPhpNamespaceFromWsdlUrl($url)
 {
-    foreach($parameters as $class)
+    $parts = explode('/', $url);
+    $name  = array_pop($parts);
+    $parts = explode('.', $name);
+    return array_shift($parts);
+}
+
+function generateParameterClassBody($param)
+{
+    return '    const NAMESPACE_XSD = \''.$param['namespace'].'\'; ' . "\n" .
+           '    const NAME          = \''.$param['name'].'\'; ' . "\n" .        
+           '    public function getData()' . "\n" .
+           '    {' . "\n" .
+           '        return get_object_vars($this);' . "\n" .    
+           '    }' . "\n";
+           
+//     var_dump(__METHOD__);
+//     // var_dump($param);
+//     exit;
+}
+
+function generateParamaterClassesFromParams($params, $url)
+{
+    $wsdl_namespsace = getPhpNamespaceFromWsdlUrl($url);
+    foreach($params as $param)
     {
-        $class = 'Pulsestorm\Blackboard\Soap\\' . $class;
+        if(!$param['complex-config']) { continue; }
+        $type  = getNamePortionFromTag($param['type']);
+        $class = 'Pulsestorm\Blackboard\Soap\Parameters\\' . $wsdl_namespsace . '\\' . $type;
+        
         $full_path = getFullPathFromClassname($class);
         makeDirectoryForFileIfDoesntExist($full_path);
         $namespace = getPhpNamespaceFromFullPath($full_path);
         $class_name = getPhpClassNameFromFullPath($full_path);
         
         file_put_contents($full_path, '<' . '?' . 'php' . "\n" .
-            'namespace ' . $namespace . "\n" . 
+            'namespace ' . $namespace . ';' . "\n" . 
             'class ' . $class_name . "\n" . 
             '{' . "\n" . 
-            '}');                    
+            generateParameterClassBody($param) .
+            '}');          
+        // echo $class,"\n";
+    }    
+}
+
+function generateParamaterClassesFromUrlAndMethods($url, $methods)
+{
+    foreach($methods as $params)
+    {
+        generateParamaterClassesFromParams($params, $url);
+    }        
+}
+
+function generateParamaterClassesFromAll($parameters_all)
+{
+    foreach($parameters_all as $url=>$methods)
+    {
+        generateParamaterClassesFromUrlAndMethods($url, $methods);
     }
+    
+//     var_dump(count($all));
+//     var_dump(count(array_unique($all)));
+    
+        // var_dump($url);
+        // var_dump($wsdl_parameters);
+        
+//     foreach($parameters as $class)
+//     {
+//         $class = 'Pulsestorm\Blackboard\Soap\\' . $class;
+//         $full_path = getFullPathFromClassname($class);
+//         makeDirectoryForFileIfDoesntExist($full_path);
+//         $namespace = getPhpNamespaceFromFullPath($full_path);
+//         $class_name = getPhpClassNameFromFullPath($full_path);
+//         
+//         file_put_contents($full_path, '<' . '?' . 'php' . "\n" .
+//             'namespace ' . $namespace . "\n" . 
+//             'class ' . $class_name . "\n" . 
+//             '{' . "\n" . 
+//             '}');                    
+//     }
+}
+
+function getComplexParameterTypeDefintionFromXml($type, $xml)
+{
+    $parts = explode(':', $type);
+    $type  = array_pop($parts);
+    $xml->registerXPathNamespace('xs', 'http://www.w3.org/2001/XMLSchema');
+    
+    $nodes = $xml->xpath('//xs:complexType[@name="' . $type . '"]');
+    $node = array_pop($nodes);
+    
+    $elements = $node->children('http://www.w3.org/2001/XMLSchema')->sequence
+    ->children('http://www.w3.org/2001/XMLSchema');
+    
+    $definition = [];
+    foreach($elements as $element)
+    {
+        $attributes = (array)$element->attributes();
+        $definition[] = $attributes['@attributes'];
+    }
+    return $definition;
 }
 
 function main($argv)
@@ -476,8 +602,10 @@ function main($argv)
     #fetchAndParseWsdl($urls);
     
     $methods = generateMethodsFromPortTypes($urls);
-    generateClientClasses($urls, $methods);
-    generateParamaterClasses(accessParameterType());    
+    generateClientClasses($urls, $methods);        
     
+    generateParamaterClassesFromAll(accessParameterConfigurations());
+    
+
 }
 main($argv);

@@ -7,6 +7,8 @@ require 'src/Pulsestorm/Blackboard/Soap/Context.php';
 require 'src/Pulsestorm/Blackboard/Soap/Resource.php';
 require 'src/Pulsestorm/Blackboard/Soap/Client.php';
 require 'src/Pulsestorm/Blackboard/Soap/Course.php';
+require 'src/Pulsestorm/Blackboard/Soap/Parameters/Base.php';
+require 'src/Pulsestorm/Blackboard/Soap/Parameters/Course/CourseFilter.php';
 use Pulsestorm\Blackboard\Soap\Context;
 use Pulsestorm\Blackboard\Soap\Client;
 
@@ -32,11 +34,15 @@ function main($argv)
     $memberships  = $api_context->getMemberships($session_id, $config['username']);    
     
     $external_id = $memberships['externalId'];
-    var_dump($memberships);
-    exit;
+
     $api_course   = $client->getCourse();
     
-    $membership = $api_course->getCourse($session_id, ['filterType'=>'3','ids'=>$external_id]);
+    $filter = new \Pulsestorm\Blackboard\Soap\Parameters\Course\CourseFilter;
+    $filter->filterType = 3;
+    $filter->ids = $external_id;
+    
+    //$membership = $api_course->getCourse($session_id, ['filterType'=>'3','ids'=>$external_id]);
+    $membership = $api_course->getCourse($session_id, $filter);
     var_dump($membership);
 
 

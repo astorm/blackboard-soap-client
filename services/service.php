@@ -27,8 +27,14 @@ class Service {
 					if (is_array($arg)) {
 						foreach($arg as $sub_arg) {
 							$body .= "<ns1:$key>$sub_arg</ns1:$key>";
-						}
-					} else {
+						}					
+					} 
+					else if(is_object($arg))
+					{
+					    $body .= $arg->serializeForParam();
+					}
+					else 
+					{
 						$body .= "<ns1:$key>$arg</ns1:$key>";
 					}
 				}
