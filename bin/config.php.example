@@ -1,0 +1,13 @@
+<?php
+return [
+    'bb-url'         => 'https://example.blackboard.com',
+    'base-dir'       => '/path/to/generate/files/into',
+    'tool-password'  => 'yourtoolpassword',
+    'tool-namespace' => 'TooNamespace',
+    'tool-name'      => 'ToolName',    
+    'username'       => 'jsmith',
+    'test2'          => [
+        'username'=>'gsmith',
+        'password'=>'password'
+    ]
+];
