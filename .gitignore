@@ -1,13 +1,2 @@
 bin/config.php
-src/Pulsestorm/Blackboard/Soap/Announcement.php
-src/Pulsestorm/Blackboard/Soap/Calendar.php
-src/Pulsestorm/Blackboard/Soap/Content.php
-src/Pulsestorm/Blackboard/Soap/Context.php
-src/Pulsestorm/Blackboard/Soap/Course.php
-src/Pulsestorm/Blackboard/Soap/CourseMembership.php
-src/Pulsestorm/Blackboard/Soap/Gradebook.php
-src/Pulsestorm/Blackboard/Soap/NotificationDistributorOperations.php
-src/Pulsestorm/Blackboard/Soap/User.php
-src/Pulsestorm/Blackboard/Soap/Util.php
-src/Pulsestorm/Blackboard/Soap/Parameters/
 vendor
