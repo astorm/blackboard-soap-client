@@ -12,8 +12,7 @@
  *
  */
 namespace Pulsestorm\Blackboard\Soap\Legacy;  
-class Calendar extends Service {
-	
+class Calendar extends Service {	
 	public function __call($method, $args = null) {
 		return parent::buildBody($method, 'Calendar', $args[0]);
 	}

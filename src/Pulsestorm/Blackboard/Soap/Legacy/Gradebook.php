@@ -12,8 +12,7 @@
  *
  */
 namespace Pulsestorm\Blackboard\Soap\Legacy;  
-class Gradebook extends Service {
-	
+class Gradebook extends Service {	
 	public function __call($method, $args = null) {
 		return parent::buildBody($method, 'Gradebook', $args[0]);
 	}

@@ -13,8 +13,7 @@
  *
  */
 namespace Pulsestorm\Blackboard\Soap\Legacy;  
-class Service {
-	
+class Service {	
 	public function buildBody($method = null, $service, $args = null) {
 		
 		$body = '<SOAP-ENV:Body xmlns:ns1="http://' . strtolower($service) . '.ws.blackboard">';

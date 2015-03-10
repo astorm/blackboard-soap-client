@@ -12,8 +12,7 @@
  *
  */
 namespace Pulsestorm\Blackboard\Soap\Legacy;  
-class Context extends Service {
-	
+class Context extends Service {	
 	public function __call($method, $args = null) {
 		return parent::buildBody($method, 'Context', $args[0]);
 	}

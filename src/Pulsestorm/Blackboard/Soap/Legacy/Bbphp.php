@@ -28,23 +28,13 @@
  */ 
 namespace Pulsestorm\Blackboard\Soap\Legacy; 
 use DOMDocument;
-// include('services/service.php'); 
-// include('services/announcement.php');
-// include('services/calendar.php');
-// include('services/content.php');
-// include('services/context.php');
-// include('services/course.php');
-// include('services/coursemembership.php');
-// include('services/gradebook.php');
-// include('services/user.php');
-// include('services/util.php');
-
+use Exception;
 class Bbphp {
-	
-	protected $session_id = null;
-	private $services = array('Announcement', 'Calendar', 'Content', 'Context', 'Course', 'CourseMembership', 'Gradebook', 'NotificationDistributorOperations', 'User', 'Util');
-	public $url = null;
-	public $use_curl = true;
+	protected $session_id   = null;
+	private $services       = array('Announcement', 'Calendar', 'Content', 'Context', 'Course', 'CourseMembership', 'Gradebook', 'NotificationDistributorOperations', 'User', 'Util');
+	public $url             = null;
+	public $use_curl        = true;
+	protected $_log         = true;		
 	
 	public function __construct($url = null, $use_curl = true) {
 		$this->url = $url;
@@ -116,7 +106,7 @@ END;
 	public function doCall($method = null, $service = "Context", $args = null) {
 		
 		$request = $this->buildRequest($method, $service, $args);
-        echo($request."\n");
+        $this->log($request);
         
 		if ($this->use_curl) {
 			$ch = curl_init();
@@ -133,7 +123,7 @@ END;
 			$result = $this->doPostRequest($this->url . '/webapps/ws/services/' . $service . '.WS', $request, "Content-type: text/xml; charset=utf-8\nSOAPAction: \"" . $method . "\"");
 		}
 
-        // echo $result,"\n";
+        $this->log($result);
 
 		$result_array = $this->xmlstr_to_array($result);
 
@@ -220,6 +210,12 @@ END;
 		
 		return $output;
 	}	
+
+	public function log($string)
+	{
+	    if(!$this->_log) { return; }
+	    echo $string,"\n";
+	}
 	
 }
 ?>

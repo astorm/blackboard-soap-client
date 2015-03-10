@@ -1,4 +1,5 @@
 {
+    "name": "pulsestorm/blackboard-soap-client",
     "autoload":{
         "psr-4": {
             "Pulsestorm\\":"src/Pulsestorm"

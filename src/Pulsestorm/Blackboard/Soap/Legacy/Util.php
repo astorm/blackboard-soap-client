@@ -12,8 +12,7 @@
  *
  */
 namespace Pulsestorm\Blackboard\Soap\Legacy;  
-class Util extends Service {
-	
+class Util extends Service {	
 	public function __call($method, $args = null) {
 		return parent::buildBody($method, 'Util', $args[0]);
 	}
