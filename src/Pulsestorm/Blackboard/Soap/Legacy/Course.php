@@ -11,6 +11,7 @@
  * @author johns
  *
  */
+namespace Pulsestorm\Blackboard\Soap\Legacy;  
 class Course extends Service {
 	
 // 	public function getCourse($args) {

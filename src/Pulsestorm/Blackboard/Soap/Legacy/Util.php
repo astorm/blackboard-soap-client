@@ -6,15 +6,16 @@
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  * 
- * This is a stub class for service calls made under the Context service.
+ * This is a stub class for service calls made under the Util service.
  * 
  * @author johns
  *
  */
-class Context extends Service {
+namespace Pulsestorm\Blackboard\Soap\Legacy;  
+class Util extends Service {
 	
 	public function __call($method, $args = null) {
-		return parent::buildBody($method, 'Context', $args[0]);
+		return parent::buildBody($method, 'Util', $args[0]);
 	}
 }
 

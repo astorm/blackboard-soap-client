@@ -26,19 +26,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE. 
  */ 
- 
-include('services/service.php'); 
-include('services/announcement.php');
-include('services/calendar.php');
-include('services/content.php');
-include('services/context.php');
-include('services/course.php');
-include('services/coursemembership.php');
-include('services/gradebook.php');
-include('services/user.php');
-include('services/util.php');
+namespace Pulsestorm\Blackboard\Soap\Legacy; 
+use DOMDocument;
+// include('services/service.php'); 
+// include('services/announcement.php');
+// include('services/calendar.php');
+// include('services/content.php');
+// include('services/context.php');
+// include('services/course.php');
+// include('services/coursemembership.php');
+// include('services/gradebook.php');
+// include('services/user.php');
+// include('services/util.php');
 
-class BbPhp {
+class Bbphp {
 	
 	protected $session_id = null;
 	private $services = array('Announcement', 'Calendar', 'Content', 'Context', 'Course', 'CourseMembership', 'Gradebook', 'NotificationDistributorOperations', 'User', 'Util');
@@ -84,7 +85,8 @@ END;
 	private function buildRequest($method = null, $service, $args = null) {
 		$header = $this->buildHeader();
 		
-		$serviceObject = new $service();
+        $class = 'Pulsestorm\Blackboard\Soap\Legacy\\' . $service;
+		$serviceObject = new $class();
 
 		$body = $serviceObject->$method($args);
 

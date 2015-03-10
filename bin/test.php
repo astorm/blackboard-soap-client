@@ -2,7 +2,7 @@
 <?php
 namespace Pulsestorm\Cli\Blackboard\Soap\Wsdl\Generator;
 require 'vendor/autoload.php';
-require 'bbphp.php';
+// require 'bbphp.php';
 use Pulsestorm\Blackboard\Soap\Context;
 use Pulsestorm\Blackboard\Soap\Client;
 

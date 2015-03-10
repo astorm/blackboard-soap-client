@@ -1,6 +1,7 @@
 <?php
 namespace Pulsestorm\Blackboard\Soap;
-class Resource extends \BBPhp
+use Pulsestorm\Blackboard\Soap\Legacy\Bbphp;
+class Resource extends Bbphp
 {
 	public function __construct($url = null, $use_curl = true) {
 		$this->url = $url;

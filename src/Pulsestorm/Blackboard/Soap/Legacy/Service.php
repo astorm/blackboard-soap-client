@@ -12,6 +12,7 @@
  * @author johns
  *
  */
+namespace Pulsestorm\Blackboard\Soap\Legacy;  
 class Service {
 	
 	public function buildBody($method = null, $service, $args = null) {

@@ -6,15 +6,16 @@
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  * 
- * This is a stub class for service calls made under the Util service.
+ * This is a stub class for service calls made under the Gradebook service.
  * 
  * @author johns
  *
  */
-class Util extends Service {
+namespace Pulsestorm\Blackboard\Soap\Legacy;  
+class Gradebook extends Service {
 	
 	public function __call($method, $args = null) {
-		return parent::buildBody($method, 'Util', $args[0]);
+		return parent::buildBody($method, 'Gradebook', $args[0]);
 	}
 }
 
