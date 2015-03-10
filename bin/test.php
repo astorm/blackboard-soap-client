@@ -1,14 +1,8 @@
 #!/usr/bin/env php
 <?php
 namespace Pulsestorm\Cli\Blackboard\Soap\Wsdl\Generator;
-require "bbphp.php";
-require 'src/Pulsestorm/Blackboard/Soap/ApiBase.php';
-require 'src/Pulsestorm/Blackboard/Soap/Context.php';
-require 'src/Pulsestorm/Blackboard/Soap/Resource.php';
-require 'src/Pulsestorm/Blackboard/Soap/Client.php';
-require 'src/Pulsestorm/Blackboard/Soap/Course.php';
-require 'src/Pulsestorm/Blackboard/Soap/Parameters/Base.php';
-require 'src/Pulsestorm/Blackboard/Soap/Parameters/Course/CourseFilter.php';
+require 'vendor/autoload.php';
+require 'bbphp.php';
 use Pulsestorm\Blackboard\Soap\Context;
 use Pulsestorm\Blackboard\Soap\Client;
 

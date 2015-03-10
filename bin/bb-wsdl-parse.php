@@ -73,9 +73,16 @@ function indentBy($string, $by='    ')
     return implode("\n",$new);
 }
 
+function generateGeneratedComment()
+{
+    return '/* Generated File: '.date('Y-m-d H:i:s',time()).'*/';
+
+}
+
 function generateClassContents($namespace, $class, $methods)
 {
     return '<' . '?' . 'php'            . "\n" . 
+        generateGeneratedComment() . "\n" . 
         'namespace ' . $namespace . ';' . "\n" .
         'class ' . $class               . " extends ApiBase\n" .
         '{'                             . "\n" .       
@@ -502,16 +509,38 @@ function getPhpNamespaceFromWsdlUrl($url)
 
 function generateParameterClassBody($param)
 {
-    return '    const NAMESPACE_XSD = \''.$param['namespace'].'\'; ' . "\n" .
+    $body= '    const NAMESPACE_XSD = \''.$param['namespace'].'\'; ' . "\n" .
            '    const NAME          = \''.$param['name'].'\'; ' . "\n" .        
-           '    public function getData()' . "\n" .
+           '    //start soap data' . "\n";
+           foreach($param['complex-config'] as $props)
+           {
+               $body .= '    public $' . $props['name'] . ';' . "\n"; 
+           }
+    $body .=                      
+           '    //end soap data' . "\n\n" .
+
+           '    public function getData()' . "\n" .           
            '    {' . "\n" .
-           '        return get_object_vars($this);' . "\n" .    
-           '    }' . "\n";
-           
-//     var_dump(__METHOD__);
-//     // var_dump($param);
-//     exit;
+           '        $data = [' . "\n";
+           foreach($param['complex-config'] as $props)
+           {
+               $body .= '            \'' . 
+                    $props['name'] . '\'=>$this->' . $props['name'] . ', ' . "\n";
+           }        
+    $body .= '        ];' . "\n\n"; 
+    
+    $body .= '        $data = array_filter($data, function($item){' . "\n" .
+             '            if($item)' . "\n" .
+             '            {' . "\n" .
+             '                return true;' . "\n" .
+             '            }' . "\n" .
+             '            return false;' . "\n" .
+             '        });' .    "\n\n" .
+             '        return $data;' . "\n\n";
+    
+    $body .=
+           '    }' . "\n\n";           
+    return $body;           
 }
 
 function generateParamaterClassesFromParams($params, $url)
@@ -529,8 +558,10 @@ function generateParamaterClassesFromParams($params, $url)
         $class_name = getPhpClassNameFromFullPath($full_path);
         
         file_put_contents($full_path, '<' . '?' . 'php' . "\n" .
+            generateGeneratedComment() . "\n" .         
             'namespace ' . $namespace . ';' . "\n" . 
-            'class ' . $class_name . "\n" . 
+            'use Pulsestorm\Blackboard\Soap\Parameters\Base;' . "\n" . 
+            'class ' . $class_name . " extends Base\n" . 
             '{' . "\n" . 
             generateParameterClassBody($param) .
             '}');          
@@ -552,27 +583,6 @@ function generateParamaterClassesFromAll($parameters_all)
     {
         generateParamaterClassesFromUrlAndMethods($url, $methods);
     }
-    
-//     var_dump(count($all));
-//     var_dump(count(array_unique($all)));
-    
-        // var_dump($url);
-        // var_dump($wsdl_parameters);
-        
-//     foreach($parameters as $class)
-//     {
-//         $class = 'Pulsestorm\Blackboard\Soap\\' . $class;
-//         $full_path = getFullPathFromClassname($class);
-//         makeDirectoryForFileIfDoesntExist($full_path);
-//         $namespace = getPhpNamespaceFromFullPath($full_path);
-//         $class_name = getPhpClassNameFromFullPath($full_path);
-//         
-//         file_put_contents($full_path, '<' . '?' . 'php' . "\n" .
-//             'namespace ' . $namespace . "\n" . 
-//             'class ' . $class_name . "\n" . 
-//             '{' . "\n" . 
-//             '}');                    
-//     }
 }
 
 function getComplexParameterTypeDefintionFromXml($type, $xml)

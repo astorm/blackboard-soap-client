@@ -10,3 +10,4 @@ src/Pulsestorm/Blackboard/Soap/NotificationDistributorOperations.php
 src/Pulsestorm/Blackboard/Soap/User.php
 src/Pulsestorm/Blackboard/Soap/Util.php
 src/Pulsestorm/Blackboard/Soap/Parameters/
+vendor
