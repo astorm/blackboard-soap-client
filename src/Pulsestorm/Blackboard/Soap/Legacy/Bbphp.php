@@ -34,12 +34,18 @@ class Bbphp {
 	private $services       = array('Announcement', 'Calendar', 'Content', 'Context', 'Course', 'CourseMembership', 'Gradebook', 'NotificationDistributorOperations', 'User', 'Util');
 	public $url             = null;
 	public $use_curl        = true;
-	protected $_log         = true;		
+	protected $log          = false;		
 	
 	public function __construct($url = null, $use_curl = true) {
 		$this->url = $url;
 		$this->use_curl = $use_curl;
 		$this->session_id = $this->Context("initialize");
+	}
+	
+	public function setLog($value)
+	{
+	    $this->log = $value;
+	    return $this;
 	}
 	
 	private function buildHeader() {
@@ -213,7 +219,7 @@ END;
 
 	public function log($string)
 	{
-	    if(!$this->_log) { return; }
+	    if(!$this->log) { return; }
 	    echo $string,"\n";
 	}
 	
