@@ -2,8 +2,8 @@
 
 A PHP client library for Blackboard 9's Soap API.  Project goals include
 
-- Providing more transparency into WS-Security Header
-- Without requiring users to generate their own headers or parameter XML
+- Providing more transparency into WS-Security Header ...
+- ... without requiring users to generate their own headers or parameter XML
 - Use code generation to provide transparency into methods and their parameters
 - Enough documentation of Blackboard objects to use them (i.e. Filters)
 
