@@ -9,9 +9,14 @@ A PHP client library for Blackboard 9's Soap API.  Project goals include
 
 If you're looking for instructions on how to make an API calls, the three step Register, Login, Call process is documented in [the Wiki](https://github.com/astorm/blackboard-soap-client/wiki).
 
+Add to Composer
+--------------------------------------------------
+You're just a simple require away 
+
+	"require": {
+		"pulsestorm/blackboard-soap-client": "0.2.0"
+	}
 
 Thanks To
 --------------------------------------------------
-The transport layer of this project is based on the library open sourced by [St. Edwards](https://github.com/stedwards), yay open source!
-
-In the meantime you're probably looking for [this](https://github.com/stedwards/Blackboard-Web-Services-PHP-Library) or maybe [this](https://github.com/blackboard/BBDN-Web-Service-Python-Sample-Code).
+The transport layer of this project is based on the library open sourced by [St. Edwards](https://github.com/stedwards), and kudos to Blackboard for [getting more code online](https://github.com/blackboard/BBDN-Web-Service-Python-Sample-Code).
