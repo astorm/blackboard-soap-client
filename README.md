@@ -14,7 +14,7 @@ Add to Composer
 You're just a simple require away 
 
 	"require": {
-		"pulsestorm/blackboard-soap-client": "0.2.0"
+		"pulsestorm/blackboard-soap-client": "0.2.1"
 	}
 
 Thanks To
