@@ -11,8 +11,14 @@ If you're looking for instructions on how to make an API calls, the three step R
 
 Add to Composer
 --------------------------------------------------
-You're just a simple require away 
+You're just a simple `require` and `repository`away 
 
+	"repositories": [
+	{
+	    "type": "vcs",
+	    "url": "https://github.com/astorm/blackboard-soap-client"
+	}],	
+    
 	"require": {
 		"pulsestorm/blackboard-soap-client": "0.2.1"
 	}
