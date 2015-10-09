@@ -33,7 +33,7 @@ class Base
         foreach ($this->getData() as $key => $arg) {
             $body .= '<ns2:' . $key . '>' . $arg . '</ns2:' . $key . '>';
         }
-        $body .= '</ns1:filter>';		        
+        $body .= '</ns1:'.static::NAME.'>';		        
         return $body;
     }
 }
